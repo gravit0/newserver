@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.1)
+
+project(libnserver)
+set( SOURCE_ROOT ./src )
+set (CMAKE_CXX_STANDARD 11)
+include_directories(include)
+aux_source_directory( ${SOURCE_ROOT} SOURCES )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -O2")
+add_library(libns SHARED ${SOURCES})
+add_library(libns_static STATIC ${SOURCES})
+set_target_properties(libns_static PROPERTIES OUTPUT_NAME ns)
+set_target_properties(libns PROPERTIES OUTPUT_NAME ns)
