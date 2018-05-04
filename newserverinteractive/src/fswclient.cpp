@@ -18,32 +18,39 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <getopt.h>
 #include "basefunctions.h"
-#include <sys/un.h>
 #include <vector>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "libns.hpp"
 #include "libns_callmap.hpp"
+#include <arpa/inet.h>
 #include "colors.hpp"
 #undef OK
 #define SOCK_NAME sock_path
 #define BUF_SIZE 256
-static const char *optString = "f:";
+static const char *optString = "h:";
 int main(int argc, char ** argv) {
     int opt = getopt(argc, argv, optString);
     char sock_path[BUF_SIZE];
     strcpy(sock_path,"/run/sp");
-    int init_path = 0;
+    int port = 8264;
     char buf[BUF_SIZE];
     buf[0] = 0;
     while (opt != -1) {
         switch (opt) {
-            case 'f':
+            case 'h':
             {
                 strcpy(sock_path, optarg);
-                init_path = 1;
+                break;
+
+            }
+            case 'p':
+            {
+                port = atoi(optarg);
                 break;
 
             }
@@ -54,15 +61,15 @@ int main(int argc, char ** argv) {
         opt = getopt(argc, argv, optString);
     }
     int sock;
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
-    struct sockaddr_un srvr_name;
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    struct sockaddr_in srvr_name;
     if (sock < 0) {
         perror("socket failed");
         return EXIT_FAILURE;
     }
-    srvr_name.sun_family = AF_UNIX;
-    if (init_path) strcpy(srvr_name.sun_path, SOCK_NAME);
-    else strcpy(srvr_name.sun_path, "/run/sp");
+    srvr_name.sin_family = AF_INET;
+    srvr_name.sin_port = htons(port);
+    srvr_name.sin_addr.s_addr = inet_addr(sock_path); //TODO: FIX
     if (connect(sock, (sockaddr*) &srvr_name, sizeof (srvr_name)) < 0) {
         perror("connect failed");
         exit(2);

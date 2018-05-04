@@ -50,7 +50,7 @@ std::vector<std::string_view> split(std::string_view cmd, const char splitchar) 
 
 int config_parse(const std::string& filename) {
     auto lam = [](std::string_view frist, std::string_view last, std::string_view, bool) {
-        if (frist == "sockfile" && !cfg.isSetSockfile) cfg.sockfile = last;
+        if (frist == "host" && !cfg.isSetHost) cfg.host = last;
         else if (frist == "pidfile") cfg.pidfile = last;
         else if (frist == "daemontype") {
             if (last == "simple") cfg.daemon_type = Configuration::CFG_DAEMON_SIMPLE;
@@ -87,17 +87,17 @@ int main(int argc, char** argv) {
     main_set_signals();
     int opt = getopt_long(argc, argv, getopts::optString, getopts::long_options, NULL);
     cfg.isDaemon = false;
-    std::string config_file = "/etc/sp.cfg";
+    std::string config_file = "/etc/ns.cfg";
     while (opt != -1) {
         switch (opt) {
             case 'd':
                 cfg.isDaemon = true;
                 std:: cout << "start daemon" << std::endl;
                 break;
-            case 's':
+            case 'h':
             {
-                cfg.sockfile = std::string(optarg);
-                cfg.isSetSockfile = true;
+                cfg.host = std::string(optarg);
+                cfg.isSetHost = true;
                 break;
             }
             case 'c':
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     ////
     if (!cfg.isDaemon) return 0;
     try {
-        gsock = new Sock(cfg.sockfile, cfg.max_connect + 1);
+        gsock = new Sock(cfg.host,cfg.port, cfg.max_connect + 1);
         if (cfg.daemon_type == Configuration::CFG_DAEMON_FORKING && !(getopts::longopts.isNoForking == 1)) {
             int pid = fork();
             if (pid > 0) {

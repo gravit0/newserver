@@ -16,7 +16,7 @@
 #include "config.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/un.h>
+#include <netinet/in.h>
 #include <exception>
 #include <boost/noncopyable.hpp>
 #include <sys/epoll.h>
@@ -61,14 +61,6 @@ namespace flags
     };
 }
 namespace cmdflags{
-namespace install
-{
-    enum : unsigned int{
-        nodep = 1 >> 0,
-        fakeinstall = 1 << 1,
-        full_path = 1 << 2
-    };
-}
 }
 
 struct message_head
@@ -82,7 +74,7 @@ struct message_head
 //////
 class Sock : public boost::noncopyable {
 private:
-    struct sockaddr_un srvr_name;
+    struct sockaddr_in srvr_name;
     int sock_;
     const char* filename_c;
     bool loopEnable;
@@ -96,7 +88,7 @@ public:
         SLAVE
     };
     CallTable table;
-    Sock(std::string filepath, int max_connect);
+    Sock(std::string host,int port, int max_connect);
     void loop();
     void loop_impl(multithread_loop l);
     int exec(char* data, unsigned int size,Client* t);

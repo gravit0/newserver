@@ -14,11 +14,12 @@ struct _SecurityInfo {
 };
 
 struct Configuration {
-    std::string sockfile = "/run/sp";
-    std::string pidfile = "/run/sp.pid";
+    std::string host = "127.0.0.1";
+    std::string pidfile = "/run/ns.pid";
     _SecurityInfo security;
     int epoll_timeout = 1000;
     int max_connect = 10;
+    int port = 8264;
     Logger::level log_level;
 
     enum DAEMON_TYPE {
@@ -34,7 +35,8 @@ struct Configuration {
     };
     SETUID_MODES setuid_mode = CFG_SETUID_NONE;
     DAEMON_TYPE daemon_type = CFG_DAEMON_SIMPLE;
-    bool isSetSockfile = false;
+    bool isSetHost = false;
+    bool isSetPort = false;
     bool isDaemon = true;
     bool isAllowWarning = true;
     bool isIgnoreLowException = false;

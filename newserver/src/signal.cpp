@@ -2,6 +2,7 @@
 #include "Sock.hpp"
 #include <signal.h>
 #include <unistd.h>
+#include <memory.h>
 void hdl(int sig)
 {
     if(sig==SIGPIPE)

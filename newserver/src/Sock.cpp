@@ -25,19 +25,19 @@
 #include "EventManager.hpp"
 #include "Logger.hpp"
 #include "call_table.hpp"
-Sock::Sock(std::string filepath, int max_connect) : table((unsigned int)cmds::MAX_COMMANDS,nullptr) {
+Sock::Sock(std::string host,int port, int max_connect) : table((unsigned int)cmds::MAX_COMMANDS,nullptr) {
     this->max_connect = max_connect;
     epollsock = epoll_create(max_connect);
     events = new epoll_event[max_connect];
     loopEnable = false;
-    sock_ = socket(AF_UNIX, SOCK_STREAM, 0);
+    sock_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock_ < 0) {
         throw new socket_exception(socket_exception::SocketError);
     }
-    srvr_name.sun_family = AF_UNIX;
-    filename_c = filepath.c_str();
-    strcpy(srvr_name.sun_path, filename_c);
-    if (bind(sock_, (sockaddr*) & srvr_name, sizeof (srvr_name)) < 0) {
+    srvr_name.sin_family = AF_INET;
+    srvr_name.sin_port = htons(port);
+    srvr_name.sin_addr.s_addr = INADDR_ANY; //TODO: FIX
+    if (bind(sock_, (sockaddr*) &srvr_name, sizeof(srvr_name)) < 0) {
         throw new socket_exception(socket_exception::BindError);
     }
     listen(sock_, max_connect - 1);
