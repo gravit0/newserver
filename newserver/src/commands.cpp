@@ -22,13 +22,28 @@
 #include <chrono>
 #include <thread>
 
-CallTable::CmdResult cmd_unknown(unsigned int, std::string)
+CallTable::CmdResult cmd_unknown(unsigned int, std::string,Client*)
 {
+    
     return CallTable::CmdResult(message_result::ERROR_CMDINCORRECT);
 }
-CallTable::CmdResult cmd_stop(unsigned int, std::string)
+CallTable::CmdResult cmd_stop(unsigned int, std::string,Client*)
 {
     gsock->stop();
+    return CallTable::CmdResult(message_result::OK);
+}
+CallTable::CmdResult cmd_su(unsigned int, std::string,Client* client)
+{
+    event.sendEvent(1,"jhjhjhhj");
+    client->adminlevel = 100;
+    return CallTable::CmdResult(message_result::OK);
+}
+CallTable::CmdResult cmd_listen(unsigned int, std::string,Client* client)
+{
+    EventListener ev;
+    ev.client = client;
+    ev.event = 1;
+    event.addListener(ev);
     return CallTable::CmdResult(message_result::OK);
 }
 struct _module_version
@@ -42,7 +57,7 @@ struct _module_api
 };
 _module_api module_api;
 bool module_api_init = false;
-CallTable::CmdResult cmd_loadmodule(unsigned int, std::string file)
+CallTable::CmdResult cmd_loadmodule(unsigned int, std::string file,Client*)
 {
     if(!module_api_init)
     {
@@ -67,7 +82,7 @@ CallTable::CmdResult cmd_loadmodule(unsigned int, std::string file)
     sp_module_main();
     return CallTable::CmdResult(message_result::OK);
 };
-CallTable::CmdResult cmd_setconfig(unsigned int, std::string cfgdir)
+CallTable::CmdResult cmd_setconfig(unsigned int, std::string cfgdir,Client*)
 {
     if (config_parse(cfgdir) == 1)
     {
@@ -81,4 +96,6 @@ void push_cmds()
     gsock->table.add(&cmd_stop); // 1
     gsock->table.add(&cmd_setconfig); // 2
     gsock->table.add(&cmd_loadmodule);  // 3
+    gsock->table.add(&cmd_su);  // 3
+    gsock->table.add(&cmd_listen);  // 3
 }

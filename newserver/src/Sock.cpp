@@ -37,6 +37,9 @@ Sock::Sock(std::string host,int port, int max_connect) : table((unsigned int)cmd
     srvr_name.sin_family = AF_INET;
     srvr_name.sin_port = htons(port);
     srvr_name.sin_addr.s_addr = INADDR_ANY; //TODO: FIX
+    int enable = 1;
+    setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+    setsockopt(sock_, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int));
     if (bind(sock_, (sockaddr*) &srvr_name, sizeof(srvr_name)) < 0) {
         throw new socket_exception(socket_exception::BindError);
     }
@@ -57,11 +60,16 @@ const char* socket_exception::what() const noexcept {
     }
 }
 Client::Client(int sock) {
+    adminlevel = 0;
     this->sock = sock;
 }
 int Client::write(std::pair<void*,size_t> data)
 {
     return send(sock, data.first, data.second, 0);
+}
+int Client::write(void* data, size_t size)
+{
+    return send(sock, data, size, 0);
 }
 std::map<int, Client*> smap;
 
@@ -141,7 +149,7 @@ int Sock::exec(char* data, unsigned int size,Client* t)
         logger->logg('W', "Command protocol error: unsupported command");
         return -1;
     }
-    auto result = table.table[head->cmd](head->cmdflags,cmd);
+    auto result = table.table[head->cmd](head->cmdflags,cmd,t);
     if(std::holds_alternative<CallTable::pair>(result)) {
         auto pair = std::get<CallTable::pair>(std::move(result));
         t->write(pair);
@@ -205,6 +213,5 @@ Sock::~Sock() {
     close(sock_);
     close(epollsock);
     delete[] events;
-    unlink(filename_c);
 }
 

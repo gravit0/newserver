@@ -36,9 +36,11 @@ public:
     bool isAutoClosable = false;
     int write(std::string str);
     int write(std::pair<void*,size_t> data);
+    int write(void* data,size_t size);
     int send_ok();
     int send_error(unsigned int errorcode);
     int read();
+    int adminlevel;
     virtual ~Client();
 };
 #include "call_table.hpp"
@@ -50,7 +52,9 @@ enum : unsigned char
     stop = 1,
     setconfig = 2,
     loadmodule = 3,
-    MAX_COMMANDS = 4
+    su = 4,
+    listen = 5,
+    MAX_COMMANDS = 6
 };
 }
 namespace flags
@@ -76,7 +80,6 @@ class Sock : public boost::noncopyable {
 private:
     struct sockaddr_in srvr_name;
     int sock_;
-    const char* filename_c;
     bool loopEnable;
     int epollsock;
     int max_connect;
