@@ -25,7 +25,8 @@
 #include "EventManager.hpp"
 #include "Logger.hpp"
 #include "call_table.hpp"
-Sock::Sock(std::string host,int port, int max_connect) : table((unsigned int)cmds::MAX_COMMANDS,nullptr) {
+#include <arpa/inet.h>
+Sock::Sock(std::string host,int port, int max_connect) : table((unsigned int)cmds::MAX_COMMANDS,{nullptr, 0x0}) {
     this->max_connect = max_connect;
     epollsock = epoll_create(max_connect);
     events = new epoll_event[max_connect];
@@ -36,7 +37,7 @@ Sock::Sock(std::string host,int port, int max_connect) : table((unsigned int)cmd
     }
     srvr_name.sin_family = AF_INET;
     srvr_name.sin_port = htons(port);
-    srvr_name.sin_addr.s_addr = INADDR_ANY; //TODO: FIX
+    srvr_name.sin_addr.s_addr = inet_addr(host.c_str());
     int enable = 1;
     setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
     setsockopt(sock_, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int));
@@ -149,7 +150,7 @@ int Sock::exec(char* data, unsigned int size,Client* t)
         logger->logg('W', "Command protocol error: unsupported command");
         return -1;
     }
-    auto result = table.table[head->cmd](head->cmdflags,cmd,t);
+    auto result = table.call(head->cmd,head->cmdflags,cmd,t);
     if(std::holds_alternative<CallTable::pair>(result)) {
         auto pair = std::get<CallTable::pair>(std::move(result));
         t->write(pair);

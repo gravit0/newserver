@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
     }
     srvr_name.sin_family = AF_INET;
     srvr_name.sin_port = htons(port);
-    srvr_name.sin_addr.s_addr = inet_addr(sock_path); //TODO: FIX
+    srvr_name.sin_addr.s_addr = inet_addr(sock_path);
     if (connect(sock, (sockaddr*) &srvr_name, sizeof (srvr_name)) < 0) {
         perror("connect failed");
         exit(2);

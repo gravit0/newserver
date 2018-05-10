@@ -26,26 +26,25 @@ struct message_error : public message_result
 {
     unsigned int errorcode;
 };
-class CallTable
+namespace CallTable {
+typedef std::pair<void*,size_t> pair;
+typedef std::variant<message_result::results,pair > CmdResult;
+typedef CmdResult (*CallCell)(unsigned int, std::string,Client*);
+struct CommandFunction
 {
-private:
-   CallTable( const CallTable& ) = delete;
-   void operator=( const CallTable& ) = delete;
+    CallCell cell;
+    long long int uuid;
+};
+class CallTable : public std::vector<CommandFunction>
+{
 public:
-    typedef std::pair<void*,size_t> pair;
-    typedef std::variant<message_result::results,pair > CmdResult;
-    typedef CmdResult (*CallCell)(unsigned int, std::string,Client*);
-    CallCell default_cell;
-    CallCell* table;
-    unsigned int size;
-    unsigned int autoincrement;
-    CallTable(unsigned int size,CallCell _default);
-    unsigned int add(CallCell c);
-    inline CmdResult call(unsigned int index,unsigned int arg1, std::string arg2,Client* arg3)
+    CommandFunction default_cell;
+    CallTable(unsigned int size,CommandFunction _default);
+    inline CmdResult call(size_t index,unsigned int arg1,const std::string& arg2,Client* arg3)
     {
-        return table[index](arg1,arg2,arg3);
+        return this->operator[](index).cell(arg1,arg2,arg3);
     }
-    bool realloc(unsigned int newsize);
     ~CallTable();
+};
 };
 #endif

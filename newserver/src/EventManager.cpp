@@ -51,5 +51,5 @@ void EventManager::sendEvent(int event, std::string data) {
 }
 
 void EventManager::removeListener(Client* client) {
-    list.remove_if([&client](EventListener ev) { if(ev.client == client) return true; });
+    list.remove_if([&client](EventListener ev) { if(ev.client == client) return true;else return false; });
 }

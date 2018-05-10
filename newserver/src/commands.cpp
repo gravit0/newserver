@@ -53,7 +53,7 @@ struct _module_version
 };
 struct _module_api
 {
-    CallTable::CallCell* calltable;
+    CallTable::CommandFunction* calltable;
 };
 _module_api module_api;
 bool module_api_init = false;
@@ -61,7 +61,7 @@ CallTable::CmdResult cmd_loadmodule(unsigned int, std::string file,Client*)
 {
     if(!module_api_init)
     {
-        module_api.calltable = gsock->table.table;
+        module_api.calltable = gsock->table.data();
         module_api_init = true;
     }
     void* fd = dlopen(file.c_str(), RTLD_LAZY);
@@ -92,10 +92,10 @@ CallTable::CmdResult cmd_setconfig(unsigned int, std::string cfgdir,Client*)
 }
 void push_cmds()
 {
-    gsock->table.add(&cmd_unknown); // 0
-    gsock->table.add(&cmd_stop); // 1
-    gsock->table.add(&cmd_setconfig); // 2
-    gsock->table.add(&cmd_loadmodule);  // 3
-    gsock->table.add(&cmd_su);  // 3
-    gsock->table.add(&cmd_listen);  // 3
+    gsock->table.push_back({&cmd_unknown,0x0}); // 0
+    gsock->table.push_back({&cmd_stop,0x1}); // 1
+    gsock->table.push_back({&cmd_setconfig,0x2}); // 2
+    gsock->table.push_back({&cmd_loadmodule,0x3});  // 3
+    gsock->table.push_back({&cmd_su,0x4});  // 3
+    gsock->table.push_back({&cmd_listen,0x5});  // 3
 }

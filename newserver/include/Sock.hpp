@@ -90,7 +90,7 @@ public:
         MASTER,
         SLAVE
     };
-    CallTable table;
+    CallTable::CallTable table;
     Sock(std::string host,int port, int max_connect);
     void loop();
     void loop_impl(multithread_loop l);
